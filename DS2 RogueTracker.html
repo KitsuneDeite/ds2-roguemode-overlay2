@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dark Souls 2 RogueMode Overlay</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-opacity: 0.75;
+    }
+    body {
+      margin: 0;
+      font-family: 'Cinzel', serif;
+      background-color: rgba(0, 0, 0, 0);
+      color: #f0e6d2;
+      padding: 20px;
+      font-size: 16px;
+    }
+    .overlay {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 30px;
+      background-color: rgba(20, 20, 20, var(--bg-opacity));
+      border: 2px solid #a38b61;
+      border-radius: 20px;
+      padding: 20px;
+      width: 800px;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-size: 20px;
+      border-bottom: 1px solid #a38b61;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 4px 0;
+    }
+    .unlocked {
+      color: #9aff87;
+    }
+    .locked {
+      color: #aaa;
+    }
+    .in-progress {
+      color: #ffcc66;
+    }
+    details {
+      background-color: rgba(30, 30, 30, 0.5);
+      padding: 10px;
+      border: 1px solid #a38b61;
+      border-radius: 10px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .slider-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 999;
+    }
+    input[type=range] {
+      width: 150px;
+    }
+
+    .control-panel {
+      position: fixed;
+      top: 10px;
+      right: 20px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      width: 200px;
+      font-family: Arial, sans-serif;
+    }
+    .control-panel label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .control-panel input {
+      width: 100%;
+      padding: 5px;
+      margin-bottom: 10px;
+      border: 1px solid #a38b61;
+      border-radius: 5px;
+      background-color: #1d1d1d;
+      color: #f0e6d2;
+    }
+    .control-panel button {
+      width: 100%;
+      padding: 10px;
+      background-color: #a38b61;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .control-panel button:hover {
+      background-color: #6f4e37;
+    }
+  </style>
+</head>
+<body>
+  <div class="slider-container">
+    <label for="opacityRange">Transparency</label>
+    <input type="range" id="opacityRange" min="0" max="1" step="0.01" value="0.75">
+  </div>
+
+  <div class="overlay">
+    <div>
+      <div class="section">
+        <h2>Core Info</h2>
+        <p><strong>Lives Remaining:</strong> <span id="lives">0</span></p>
+        <p><strong>Bosses Defeated:</strong> <span id="bosses">0</span> / 40</p>
+        <p><strong>DLCs Completed:</strong> <span id="dlcs">0</span> / 3</p>
+        <p><strong>Game Status:</strong> <span id="gameStatus">Base Game Incomplete</span></p>
+      </div>
+
+      <div class="section">
+        <details open>
+          <summary>1st DLC Reward</summary>
+          <ul>
+            <li>🏆 1 DLC: Perm Item (Chosen: <span id="dlcItem">--</span>)</li>
+            <li>
+              <label for="inputDlc1">Enter Item (e.g., Flame Quartz Ring)</label>
+              <input type="text" id="inputDlc1" placeholder="Enter item here...">
+            </li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="section">
+        <details>
+          <summary>2nd DLC Reward</summary>
+          <ul>
+            <li>💍 2 DLCs: Perm Ring — <span id="dlcRing" class="locked">Locked</span></li>
+            <li>
+              <label for="inputDlc2">Enter Item (e.g., Ring of Steel Protection)</label>
+              <input type="text" id="inputDlc2" placeholder="Enter item here...">
+            </li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="section">
+        <details>
+          <summary>3rd DLC Reward</summary>
+          <ul>
+            <li>⚔️ 3 DLCs: Perm Weapon — <span id="dlcWeapon" class="locked">Locked</span></li>
+            <li>
+              <label for="inputDlc3">Enter Item (e.g., Dragon Slayer)</label>
+              <input type="text" id="inputDlc3" placeholder="Enter item here...">
+            </li>
+          </ul>
+        </details>
+      </div>
+    </div>
+
+    <div>
+      <div class="section">
+        <h2>Base Game Reward</h2>
+        <p>🏅 Covenant Item — <span id="covenantReward" class="locked">Locked</span></p>
+        <li>
+          <label for="inputBaseGameReward">Enter Base Game Item (e.g., Covenant of Champions)</label>
+          <input type="text" id="inputBaseGameReward" placeholder="Enter item here...">
+        </li>
+      </div>
+
+      <div class="section">
+        <h2>Unlock Tracker</h2>
+        <ul id="unlockTracker">
+          <!-- Dynamically populated -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Control Panel -->
+  <div class="control-panel">
+    <h3>Live Update Panel</h3>
+    <label for="updateLives">Lives Remaining</label>
+    <input type="number" id="updateLives" value="0" min="0">
+
+    <label for="updateBosses">Bosses Defeated</label>
+    <input type="number" id="updateBosses" value="0" min="0">
+
+    <label for="updateDlcs">DLCs Completed</label>
+    <input type="number" id="updateDlcs" value="0" min="0">
+
+    <label for="updateBaseGame">Base Game Completion</label>
+    <input type="number" id="updateBaseGame" value="0" min="0">
+
+    <button id="updateButton">Update Values</button>
+  </div>
+
+  <script>
+    document.getElementById('opacityRange').addEventListener('input', function () {
+      document.documentElement.style.setProperty('--bg-opacity', this.value);
+    });
+
+    function updateOverlay() {
+      const lives = document.getElementById('updateLives').value;
+      const bosses = document.getElementById('updateBosses').value;
+      const dlcs = document.getElementById('updateDlcs').value;
+      const baseGameCompletion = document.getElementById('updateBaseGame').value;
+
+      document.getElementById('lives').textContent = lives;
+      document.getElementById('bosses').textContent = bosses;
+      document.getElementById('dlcs').textContent = dlcs;
+
+      const gameStatus = (bosses >= 40) ? 'Base Game Completed' : 'Base Game Incomplete';
+      document.getElementById('gameStatus').textContent = gameStatus;
+
+      document.getElementById('dlcItem').textContent = document.getElementById('inputDlc1').value || '--';
+      document.getElementById('dlcRing').className = dlcs >= 2 ? 'unlocked' : 'locked';
+      document.getElementById('dlcWeapon').className = dlcs >= 3 ? 'unlocked' : 'locked';
+
+      document.getElementById('dlcRing').textContent = document.getElementById('inputDlc2').value || '--';
+      document.getElementById('dlcWeapon').textContent = document.getElementById('inputDlc3').value || '--';
+
+      document.getElementById('covenantReward').className = baseGameCompletion > 0 ? 'unlocked' : 'locked';
+      document.getElementById('covenantReward').textContent = document.getElementById('inputBaseGameReward').value || '--';
+    }
+
+    document.querySelectorAll('.control-panel input').forEach(input => {
+      input.addEventListener('input', updateOverlay);
+    });
+
+    updateOverlay();
+  </script>
+</body>
+</html>
